@@ -10,7 +10,7 @@ library(Seurat)
 library(Matrix)
 library(tidyverse)
 
-# Goal 1
+# ---- Goal 1 ----
 # Load single cell RNA seq data
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 source("../GScpter/Scripts/Pre_analysis_functions.R")
@@ -48,5 +48,258 @@ grinclu <- RunUMAP(grinclu, dims = 1:6)
 DimPlot(grinclu, reduction = "umap")
 saveRDS(grinclu, "goal1.rds")
 
+
+
+
+# ---- Goal 2 ----
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+source("../GScpter/Scripts/Pre_analysis_functions.R")
+RDfile <- load_data("../Datasets/neurons_and_glia_2022/final_meta_dataset.rds")
+
+# Remove the counts to start a fresh with a new Seurat object
+normed_data <- GetAssayData(RDfile, assay = "raw", slot = "data")
+rm(RDfile)
+gc()
+
+# Set the variable features
+varfeatures <- c("Grin1", "Grin2a", "Grin2b", "Grin2c", "Grin2d", "Grin3a", "Grin3b",
+                 "Grik1", "Grik2", "Grik3", "Grik4", "Grik5",
+                 "Gria1", "Gria2", "Gria3", "Gria4")
+
+# Now run through the clustering pipeline
+# Skip the QC steps because they typically have already been done
+# check if the counts have decimals and see if it needs normalizing
+# Just take the data one and use it from the normalization step and
+# and also what normalization are we doing and just start with scaling.
+grinclu <- CreateSeuratObject(counts = normed_data)
+rm(normed_data)
+gc()
+all.genes <- rownames(grinclu)
+grinclu <- ScaleData(grinclu, all.genes)
+grinclu <- RunPCA(grinclu, features = varfeatures)
+# I get a bunch of warnings as I thought
+DimPlot(grinclu, reduction = "pca")
+ElbowPlot(grinclu)
+
+# Clustering
+grinclu <- FindNeighbors(grinclu, dims = 1:6)
+grinclu <- FindClusters(grinclu, resolution = 0.5)
+head(Idents(grinclu), 5)
+
+grinclu <- RunUMAP(grinclu, dims = 1:6)
+DimPlot(grinclu, reduction = "umap")
+saveRDS(grinclu, "goal2.rds")
+
+
+
+
+# ---- Goal 3 ----
+
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+source("../GScpter/Scripts/Pre_analysis_functions.R")
+RDfile <- load_data("../Datasets/neurons_and_glia_2022/final_meta_dataset.rds")
+
+# Get the dorsal horn neurons
+all_clusters <- c("Excit-1", "Excit-2", "Excit-3", "Excit-4", "Excit-5",
+                  "Excit-6", "Excit-8", "Excit-9","Excit-10","Excit-12",
+                  "Excit-13","Excit-14","Excit-15","Excit-16","Excit-18",
+                  "Excit-19","Excit-20","Inhib-1","Inhib-2","Inhib-3",
+                  "Inhib-4","Inhib-5","Inhib-6","Inhib-7","Inhib-8","Inhib-9",
+                  "Inhib-10","Inhib-11","Inhib-12","Inhib-13","Inhib-14",
+                  "Excit-21","Excit-22","Excit-23","Excit-24","Excit-25",
+                  "Excit-26","Excit-27","Excit-29","Excit-30","Inhib-15",
+                  "Inhib-16","Inhib-18","Inhib-19","Inhib-20","Inhib-21",
+                  "Excit-31","Excit-32","Excit-34","Excit-35","Excit-36")
+CellIndicies <- which(meta_ident[["final_clusters"]] %in% unique(all_clusters))
+
+# Remove the counts to start a fresh with a new Seurat object
+normed_data <- GetAssayData(RDfile, assay = "raw", slot = "data")[, CellIndicies]
+rm(RDfile)
+gc()
+
+# Set the variable features
+varfeatures <- c("Grin1", "Grin2a", "Grin2b", "Grin2c", "Grin2d", "Grin3a", "Grin3b",
+                 "Grik1", "Grik2", "Grik3", "Grik4", "Grik5",
+                 "Gria1", "Gria2", "Gria3", "Gria4")
+
+# Now run through the clustering pipeline
+# Skip the QC steps because they typically have already been done
+# check if the counts have decimals and see if it needs normalizing
+# Just take the data one and use it from the normalization step and
+# and also what normalization are we doing and just start with scaling.
+grinclu <- CreateSeuratObject(counts = normed_data)
+rm(normed_data)
+gc()
+all.genes <- rownames(grinclu)
+grinclu <- ScaleData(grinclu, all.genes)
+grinclu <- RunPCA(grinclu, features = varfeatures)
+# I get a bunch of warnings as I thought
+DimPlot(grinclu, reduction = "pca")
+ElbowPlot(grinclu)
+
+# Clustering
+grinclu <- FindNeighbors(grinclu, dims = 1:6)
+grinclu <- FindClusters(grinclu, resolution = 0.5)
+head(Idents(grinclu), 5)
+
+grinclu <- RunUMAP(grinclu, dims = 1:6)
+DimPlot(grinclu, reduction = "umap")
+saveRDS(grinclu, "goal3.rds")
+
+
+
+
+# ---- Goal 4 ----
+
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+source("../GScpter/Scripts/Pre_analysis_functions.R")
+RDfile <- load_data("../Datasets/neurons_and_glia_2022/final_meta_dataset.rds")
+
+# Get the dorsal horn neurons
+all_clusters <- c("Excit-1", "Excit-2", "Excit-3", "Excit-4", "Excit-5",
+                  "Excit-6", "Excit-8", "Excit-9","Excit-10","Excit-12",
+                  "Excit-13","Excit-14","Excit-15","Excit-16","Excit-18",
+                  "Excit-19","Excit-20","Inhib-1","Inhib-2","Inhib-3",
+                  "Inhib-4","Inhib-5","Inhib-6","Inhib-7","Inhib-8","Inhib-9",
+                  "Inhib-10","Inhib-11","Inhib-12","Inhib-13","Inhib-14",
+                  "Excit-21","Excit-22","Excit-23","Excit-24","Excit-25",
+                  "Excit-26","Excit-27","Excit-29","Excit-30","Inhib-15",
+                  "Inhib-16","Inhib-18","Inhib-19","Inhib-20","Inhib-21",
+                  "Excit-31","Excit-32","Excit-34","Excit-35","Excit-36")
+CellIndicies <- which(meta_ident[["final_clusters"]] %in% unique(all_clusters))
+
+# Remove the counts to start a fresh with a new Seurat object
+normed_data <- GetAssayData(RDfile, assay = "raw", slot = "data")[, CellIndicies]
+rm(RDfile)
+gc()
+
+# Set the variable features
+varfeatures <- c("Grin1", "Grin2a", "Grin2b", "Grin2c", "Grin2d", "Grin3a", "Grin3b")
+
+# Now run through the clustering pipeline
+# Skip the QC steps because they typically have already been done
+# check if the counts have decimals and see if it needs normalizing
+# Just take the data one and use it from the normalization step and
+# and also what normalization are we doing and just start with scaling.
+grinclu <- CreateSeuratObject(counts = normed_data)
+rm(normed_data)
+gc()
+all.genes <- rownames(grinclu)
+grinclu <- ScaleData(grinclu, all.genes)
+grinclu <- RunPCA(grinclu, features = varfeatures)
+# I get a bunch of warnings as I thought
+DimPlot(grinclu, reduction = "pca")
+ElbowPlot(grinclu)
+
+# Clustering
+grinclu <- FindNeighbors(grinclu, dims = 1:6)
+grinclu <- FindClusters(grinclu, resolution = 0.5)
+head(Idents(grinclu), 5)
+
+grinclu <- RunUMAP(grinclu, dims = 1:6)
+DimPlot(grinclu, reduction = "umap")
+saveRDS(grinclu, "goal4.rds")
+
+
+
+
+# ---- Goal 5a ----
+# cluster all cells with out grin 2c and grin3b
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+source("../GScpter/Scripts/Pre_analysis_functions.R")
+RDfile <- load_data("../Datasets/neurons_and_glia_2022/final_meta_dataset.rds")
+
+# Remove the counts to start a fresh with a new Seurat object
+normed_data <- GetAssayData(RDfile, assay = "raw", slot = "data")
+rm(RDfile)
+gc()
+
+# Set the variable features
+varfeatures <- c("Grin1", "Grin2a", "Grin2b", "Grin2d", "Grin3a")
+
+# Now run through the clustering pipeline
+# Skip the QC steps because they typically have already been done
+# check if the counts have decimals and see if it needs normalizing
+# Just take the data one and use it from the normalization step and
+# and also what normalization are we doing and just start with scaling.
+grinclu <- CreateSeuratObject(counts = normed_data)
+rm(normed_data)
+gc()
+all.genes <- rownames(grinclu)
+grinclu <- ScaleData(grinclu, all.genes)
+grinclu <- RunPCA(grinclu, features = varfeatures)
+# I get a bunch of warnings as I thought
+DimPlot(grinclu, reduction = "pca")
+ElbowPlot(grinclu)
+
+# Clustering
+grinclu <- FindNeighbors(grinclu, dims = 1:6)
+grinclu <- FindClusters(grinclu, resolution = 0.5)
+head(Idents(grinclu), 5)
+
+grinclu <- RunUMAP(grinclu, dims = 1:6)
+DimPlot(grinclu, reduction = "umap")
+saveRDS(grinclu, "goal5a.rds")
+
+
+
+# ---- Goal 5b ----
+# remove the genes with least variance
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+source("../GScpter/Scripts/Pre_analysis_functions.R")
+RDfile <- load_data("../Datasets/neurons_and_glia_2022/final_meta_dataset.rds")
+
+# Get the dorsal horn neurons
+all_clusters <- c("Excit-1", "Excit-2", "Excit-3", "Excit-4", "Excit-5",
+                  "Excit-6", "Excit-8", "Excit-9","Excit-10","Excit-12",
+                  "Excit-13","Excit-14","Excit-15","Excit-16","Excit-18",
+                  "Excit-19","Excit-20","Inhib-1","Inhib-2","Inhib-3",
+                  "Inhib-4","Inhib-5","Inhib-6","Inhib-7","Inhib-8","Inhib-9",
+                  "Inhib-10","Inhib-11","Inhib-12","Inhib-13","Inhib-14",
+                  "Excit-21","Excit-22","Excit-23","Excit-24","Excit-25",
+                  "Excit-26","Excit-27","Excit-29","Excit-30","Inhib-15",
+                  "Inhib-16","Inhib-18","Inhib-19","Inhib-20","Inhib-21",
+                  "Excit-31","Excit-32","Excit-34","Excit-35","Excit-36")
+CellIndicies <- which(meta_ident[["final_clusters"]] %in% unique(all_clusters))
+
+# Remove the counts to start a fresh with a new Seurat object
+normed_data <- GetAssayData(RDfile, assay = "raw", slot = "data")[, CellIndicies]
+rm(RDfile)
+gc()
+
+# Set the variable features
+varfeatures <- c("Grin1", "Grin2a", "Grin2b", "Grin2c", "Grin2d", "Grin3a", "Grin3b",
+                 "Grik1", "Grik2", "Grik3", "Grik4", "Grik5",
+                 "Gria1", "Gria2", "Gria3", "Gria4")
+
+# Now run through the clustering pipeline
+# Skip the QC steps because they typically have already been done
+# check if the counts have decimals and see if it needs normalizing
+# Just take the data one and use it from the normalization step and
+# and also what normalization are we doing and just start with scaling.
+grinclu <- CreateSeuratObject(counts = normed_data)
+rm(normed_data)
+gc()
+all.genes <- rownames(grinclu)
+grinclu <- ScaleData(grinclu, all.genes)
+grinclu <- RunPCA(grinclu, features = varfeatures)
+# I get a bunch of warnings as I thought
+DimPlot(grinclu, reduction = "pca")
+ElbowPlot(grinclu)
+
+# Clustering
+grinclu <- FindNeighbors(grinclu, dims = 1:6)
+grinclu <- FindClusters(grinclu, resolution = 0.5)
+head(Idents(grinclu), 5)
+
+grinclu <- RunUMAP(grinclu, dims = 1:6)
+DimPlot(grinclu, reduction = "umap")
+saveRDS(grinclu, "goal5b.rds")
+
+
+
+
+
+# ---- DE and trends ----
 # Differential gene expression and trends
 # Make another script for this
