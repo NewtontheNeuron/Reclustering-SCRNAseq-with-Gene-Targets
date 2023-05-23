@@ -47,9 +47,16 @@ head(Idents(grinclu), 5)
 grinclu <- RunUMAP(grinclu, dims = 1:6)
 DimPlot(grinclu, reduction = "umap")
 saveRDS(grinclu, "goal1.rds")
-
-
-
+goal1 <- readRDS("goal1.rds")
+(pca <- DimPlot(goal1, reduction = "pca"))
+ggsave("goal1pca.png", plot = pca, height = 1200, device = "png",
+       width = 2100, units = "px", dpi = 300, type = "cairo")
+(umap <- DimPlot(goal1, reduction = "umap"))
+ggsave("goal1umap.png", plot = umap, height = 1200, device = "png",
+       width = 2100, units = "px", dpi = 300, type = "cairo")
+(dot <- DotPlot(goal1, features = varfeatures))
+ggsave("goal1dotplot.png", plot = dot, height = 1200, device = "png",
+       width = 2100, units = "px", dpi = 300, type = "cairo")
 
 # ---- Goal 2 ----
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
