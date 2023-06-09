@@ -7,8 +7,6 @@
 # - Goal 4--: Set the variable genes as the grin genes and cluster dorsal horn neurons
 # - Goal 5: Repeate Goal 1 without Grin3b or Grin2c
 
-# Vector for timing
-timing <- c()
 
 library(Seurat)
 library(Matrix)
@@ -21,7 +19,6 @@ source("../GScpter/Scripts/Pre_analysis_functions.R")
 RDfile <- load_data("../Datasets/neuron_and_glia_2022/final_meta_dataset.rds")
 
 # Remove the counts to start a fresh with a new Seurat object
-start <- Sys.time()
 normed_data <- GetAssayData(RDfile, assay = "raw", slot = "data")
 meta_data <- RDfile@meta.data
 rm(RDfile)
@@ -43,17 +40,19 @@ grinclu <- CreateSeuratObject(counts = normed_data[, neurnastro],
 grinclu <- ScaleData(grinclu, all.genes)
 grinclu <- FindVariableFeatures(grinclu)
 # Which of the Grin genes is a variable feature of the astrocytes and neurons
-varfeatures %in% grinclu@assays$RNA@var.features
+varfeatures[which(varfeatures %in% grinclu@assays$RNA@var.features)]
 # Only Grin2a.
 # What about for all ionotropic receptors?
 var2features <- c("Grin1", "Grin2a", "Grin2b", "Grin2c", "Grin2d", "Grin3a", "Grin3b",
                  "Grik1", "Grik2", "Grik3", "Grik4", "Grik5",
                  "Gria1", "Gria2", "Gria3", "Gria4")
-var2features[which(var2features %in% grinclu@assays$RNA@var.features)]
+(vars <- var2features[which(var2features %in% grinclu@assays$RNA@var.features)])
 # Only 5 of the ionotropic glutamate receptors are considered variable features
 
 grinclu <- RunPCA(grinclu)
 grinclu <- RunPCA(grinclu, features = varfeatures)
+grinclu <- RunPCA(grinclu, features = var2features)
+grinclu <- RunPCA(grinclu, features = vars)
 # I get a bunch of warnings as I thought
 DimPlot(grinclu, reduction = "pca", group.by = "final_coarse_types",
         pt.size = 1)
