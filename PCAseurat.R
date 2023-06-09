@@ -1,9 +1,10 @@
 # The goal of this script is to perform PCA and clustering analysis
 # on the single cell data. The tasks include:
 # - Goal 1: Set the variable genes as the grin genes and cluster all cells
+#    What percentage of the mixed clusters are dorsal horn neurons?
 # - Goal 2: Set the variable genes to glutamate receptor genes and cluster all cells
 # - Goal 3: Set the variable genes to glutamate receptor genes and cluster dorsal horn cells
-# - Goal 4: Set the variable genes as the grin genes and cluster dorsal horn cells
+# - Goal 4--: Set the variable genes as the grin genes and cluster dorsal horn neurons
 # - Goal 5: Repeate Goal 1 without Grin3b or Grin2c
 
 # Vector for timing
@@ -22,35 +23,57 @@ RDfile <- load_data("../Datasets/neuron_and_glia_2022/final_meta_dataset.rds")
 # Remove the counts to start a fresh with a new Seurat object
 start <- Sys.time()
 normed_data <- GetAssayData(RDfile, assay = "raw", slot = "data")
-meta.data <- RDfile@meta.data
+meta_data <- RDfile@meta.data
 rm(RDfile)
 gc()
 
+
 # Set the variable features
 varfeatures <- c("Grin1", "Grin2a", "Grin2b", "Grin2c", "Grin2d", "Grin3a", "Grin3b")
-
 # Now run through the clustering pipeline
 # Skip the QC steps because they typically have already been done
 # check if the counts have decimals and see if it needs normalizing
-# Just take the data one and use it from the normalization step and
+# Just take the data one and use it from the normalization step
 # and also what normalization are we doing and just start with scaling.
-grinclu <- CreateSeuratObject(counts = normed_data)
-rm(normed_data)
-gc()
-all.genes <- rownames(grinclu)
+(neurnastro <- which(meta_data$final_coarse_types %in% c("Neurons", "Astrocytes")))
+length(neurnastro)
+grinclu <- CreateSeuratObject(counts = normed_data[, neurnastro],
+                              meta.data = meta_data[neurnastro, ])
+(all.genes <- rownames(grinclu))
 grinclu <- ScaleData(grinclu, all.genes)
+grinclu <- FindVariableFeatures(grinclu)
+# Which of the Grin genes is a variable feature of the astrocytes and neurons
+varfeatures %in% grinclu@assays$RNA@var.features
+# Only Grin2a.
+# What about for all ionotropic receptors?
+var2features <- c("Grin1", "Grin2a", "Grin2b", "Grin2c", "Grin2d", "Grin3a", "Grin3b",
+                 "Grik1", "Grik2", "Grik3", "Grik4", "Grik5",
+                 "Gria1", "Gria2", "Gria3", "Gria4")
+var2features[which(var2features %in% grinclu@assays$RNA@var.features)]
+# Only 5 of the ionotropic glutamate receptors are considered variable features
+
+grinclu <- RunPCA(grinclu)
 grinclu <- RunPCA(grinclu, features = varfeatures)
 # I get a bunch of warnings as I thought
-DimPlot(grinclu, reduction = "pca")
+DimPlot(grinclu, reduction = "pca", group.by = "final_coarse_types",
+        pt.size = 1)
+DimPlot(grinclu, reduction = "pca", group.by = "final_cluster_assignment")
 ElbowPlot(grinclu)
 
 # Clustering
 grinclu <- FindNeighbors(grinclu, dims = 1:6)
-grinclu <- FindClusters(grinclu, resolution = 0.5)
+grinclu <- FindClusters(grinclu, resolution = 2)
 head(Idents(grinclu), 5)
 
 grinclu <- RunUMAP(grinclu, dims = 1:6)
 DimPlot(grinclu, reduction = "umap")
+DimPlot(grinclu, reduction = "umap", group.by = "final_coarse_types")
+DimPlot(grinclu, reduction = "umap", group.by = "final_cluster_assignment")
+DotPlot(grinclu, features = varfeatures)
+DotPlot(grinclu, features = varfeatures, group.by = "final_coarse_types")
+DotPlot(grinclu, features = varfeatures, group.by = "final_cluster_assignment")
+FeaturePlot(grinclu, features = varfeatures)
+
 saveRDS(grinclu, "goal1.rds")
 end <- Sys.time()
 timing <- c(timing, goal1 = end - start)
