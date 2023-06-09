@@ -45,7 +45,11 @@ varfeatures[which(varfeatures %in% grinclu@assays$RNA@var.features)]
 # What about for all ionotropic receptors?
 var2features <- c("Grin1", "Grin2a", "Grin2b", "Grin2c", "Grin2d", "Grin3a", "Grin3b",
                  "Grik1", "Grik2", "Grik3", "Grik4", "Grik5",
-                 "Gria1", "Gria2", "Gria3", "Gria4")
+                 "Gria1", "Gria2", "Gria3", "Gria4", "Grm1", "Grm2",
+                 "Grm3", "Grm4", "Grm5", "Grm6", "Grm7", "Grm8",
+                 "Htr1a", "Htr1b", "Htr1d", "Htr1f", "Htr2a", "Htr2b", "Htr2c","Htr3a",
+                 "Htr3b", "Htr4", "Htr5a", "Htr5b", "Htr6", "Htr7", "Cnr1", "Cnr2",
+                 "Ptpn5", "Ntrk2", "Slc12a5", "Fyn", "Bdnf")
 (vars <- var2features[which(var2features %in% grinclu@assays$RNA@var.features)])
 # Only 5 of the ionotropic glutamate receptors are considered variable features
 
@@ -68,7 +72,7 @@ grinclu <- RunUMAP(grinclu, dims = 1:6)
 DimPlot(grinclu, reduction = "umap")
 DimPlot(grinclu, reduction = "umap", group.by = "final_coarse_types")
 DimPlot(grinclu, reduction = "umap", group.by = "final_cluster_assignment")
-DotPlot(grinclu, features = varfeatures)
+DotPlot(grinclu, features = varfeatures) + coord_flip()
 DotPlot(grinclu, features = varfeatures, group.by = "final_coarse_types")
 DotPlot(grinclu, features = varfeatures, group.by = "final_cluster_assignment")
 FeaturePlot(grinclu, features = varfeatures)
