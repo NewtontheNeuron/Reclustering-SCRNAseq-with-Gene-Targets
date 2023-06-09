@@ -7,6 +7,9 @@
 # - Goal 4--: Set the variable genes as the grin genes and cluster dorsal horn neurons
 # - Goal 5: Repeate Goal 1 without Grin3b or Grin2c
 
+# Vector for timing
+timing <- c()
+
 library(Seurat)
 library(Matrix)
 library(tidyverse)
@@ -15,9 +18,10 @@ library(tidyverse)
 # Load single cell RNA seq data
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 source("../GScpter/Scripts/Pre_analysis_functions.R")
-RDfile <- load_data("../Datasets/neurons_and_glia_2022/final_meta_dataset.rds")
+RDfile <- load_data("../Datasets/neuron_and_glia_2022/final_meta_dataset.rds")
 
 # Remove the counts to start a fresh with a new Seurat object
+start <- Sys.time()
 normed_data <- GetAssayData(RDfile, assay = "raw", slot = "data")
 meta_data <- RDfile@meta.data
 rm(RDfile)
@@ -71,6 +75,8 @@ DotPlot(grinclu, features = varfeatures, group.by = "final_cluster_assignment")
 FeaturePlot(grinclu, features = varfeatures)
 
 saveRDS(grinclu, "goal1.rds")
+end <- Sys.time()
+timing <- c(timing, goal1 = end - start)
 goal1 <- readRDS("goal1.rds")
 (pca <- DimPlot(goal1, reduction = "pca"))
 ggsave("goal1pca.png", plot = pca, height = 1200, device = "png",
@@ -88,6 +94,7 @@ source("../GScpter/Scripts/Pre_analysis_functions.R")
 RDfile <- load_data("../Datasets/neurons_and_glia_2022/final_meta_dataset.rds")
 
 # Remove the counts to start a fresh with a new Seurat object
+start <- Sys.time()
 normed_data <- GetAssayData(RDfile, assay = "raw", slot = "data")
 rm(RDfile)
 gc()
@@ -113,15 +120,17 @@ DimPlot(grinclu, reduction = "pca")
 ElbowPlot(grinclu)
 
 # Clustering
-grinclu <- FindNeighbors(grinclu, dims = 1:6)
+grinclu <- FindNeighbors(grinclu, dims = 1:15)
 grinclu <- FindClusters(grinclu, resolution = 0.5)
-head(Idents(grinclu), 5)
+head(Idents(grinclu), 15)
 
 grinclu <- RunUMAP(grinclu, dims = 1:6)
 DimPlot(grinclu, reduction = "umap")
 saveRDS(grinclu, "goal2.rds")
-
-
+end <- Sys.time()
+timing <- c(timing, goal2 = end - start)
+goal2 <- readRDS("goal2.rds")
+(dot <- DotPlot(goal2, features = varfeatures))
 
 
 # ---- Goal 3 ----
@@ -131,6 +140,7 @@ source("../GScpter/Scripts/Pre_analysis_functions.R")
 RDfile <- load_data("../Datasets/neurons_and_glia_2022/final_meta_dataset.rds")
 
 # Get the dorsal horn neurons
+start <- Sys.time()
 all_clusters <- c("Excit-1", "Excit-2", "Excit-3", "Excit-4", "Excit-5",
                   "Excit-6", "Excit-8", "Excit-9","Excit-10","Excit-12",
                   "Excit-13","Excit-14","Excit-15","Excit-16","Excit-18",
@@ -176,7 +186,8 @@ head(Idents(grinclu), 5)
 grinclu <- RunUMAP(grinclu, dims = 1:6)
 DimPlot(grinclu, reduction = "umap")
 saveRDS(grinclu, "goal3.rds")
-
+end <- Sys.time()
+timing <- c(timing, goal3 = end - start)
 
 
 
@@ -187,6 +198,7 @@ source("../GScpter/Scripts/Pre_analysis_functions.R")
 RDfile <- load_data("../Datasets/neurons_and_glia_2022/final_meta_dataset.rds")
 
 # Get the dorsal horn neurons
+
 all_clusters <- c("Excit-1", "Excit-2", "Excit-3", "Excit-4", "Excit-5",
                   "Excit-6", "Excit-8", "Excit-9","Excit-10","Excit-12",
                   "Excit-13","Excit-14","Excit-15","Excit-16","Excit-18",
@@ -230,7 +242,8 @@ head(Idents(grinclu), 5)
 grinclu <- RunUMAP(grinclu, dims = 1:6)
 DimPlot(grinclu, reduction = "umap")
 saveRDS(grinclu, "goal4.rds")
-
+end <- Sys.time()
+timing <- c(timing, goal4 = end - start)
 
 
 
@@ -299,7 +312,7 @@ rm(RDfile)
 gc()
 
 # Set the variable features
-varfeatures <- c("Grin1", "Grin2a", "Grin2b", "Grin2c", "Grin2d", "Grin3a", "Grin3b",
+varfeatures <- c("Grin1", "Grin2a", "Grin2b", "Grin2d", "Grin3a", "Grin3b",
                  "Grik1", "Grik2", "Grik3", "Grik4", "Grik5",
                  "Gria1", "Gria2", "Gria3", "Gria4")
 
