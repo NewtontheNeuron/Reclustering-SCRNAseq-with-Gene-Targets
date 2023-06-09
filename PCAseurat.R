@@ -33,7 +33,7 @@ varfeatures <- c("Grin1", "Grin2a", "Grin2b", "Grin2c", "Grin2d", "Grin3a", "Gri
 # Now run through the clustering pipeline
 # Skip the QC steps because they typically have already been done
 # check if the counts have decimals and see if it needs normalizing
-# Just take the data one and use it from the normalization step and
+# Just take the data one and use it from the normalization step
 # and also what normalization are we doing and just start with scaling.
 (neurnastro <- which(meta_data$final_coarse_types %in% c("Neurons", "Astrocytes")))
 length(neurnastro)
