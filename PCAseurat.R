@@ -22,6 +22,7 @@ RDfile <- load_data("../Datasets/neuron_and_glia_2022/final_meta_dataset.rds")
 # Remove the counts to start a fresh with a new Seurat object
 start <- Sys.time()
 normed_data <- GetAssayData(RDfile, assay = "raw", slot = "data")
+meta.data <- RDfile@meta.data
 rm(RDfile)
 gc()
 
